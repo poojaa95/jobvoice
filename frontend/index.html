@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobVoice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .logo {
+            font-size: 60px;
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            margin: 10px 0;
+        }
+        p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .user-type {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .type-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .type-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">🎤</div>
+    <h1>JobVoice</h1>
+    <p>Find work • Just speak</p>
+    
+    <div class="user-type">
+        <button class="type-btn active" data-type="worker">👷 Worker</button>
+        <button class="type-btn" data-type="employer">🏢 Employer</button>
+    </div>
+    
+    <input type="tel" id="phone" placeholder="Phone Number" class="input-field">
+    <input type="text" id="name" placeholder="Your Name" class="input-field">
+    
+    <button id="sendOtpBtn" class="btn-primary">Send OTP</button>
+    
+    <div id="otpSection" style="display:none;">
+        <input type="text" id="otp" placeholder="Enter OTP" class="input-field">
+        <button id="verifyBtn" class="btn-primary">Login</button>
+    </div>
+    
+    <div id="message"></div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:5000/api';
+    let selectedType = 'worker';
+    
+    // User type selection
+    document.querySelectorAll('.type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            selectedType = this.dataset.type;
+        });
+    });
+    
+    // Send OTP
+    document.getElementById('sendOtpBtn').addEventListener('click', async () => {
+        const phone = document.getElementById('phone').value;
+        
+        if (!phone || phone.length < 10) {
+            showMessage('Enter valid phone number', 'error');
+            return;
+        }
+        
+        showMessage('Sending OTP...', 'info');
+        
+        try {
+            const response = await fetch(`${API_URL}/auth/request-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('OTP sent! Check backend terminal for code', 'success');
+                document.getElementById('otpSection').style.display = 'block';
+                document.getElementById('sendOtpBtn').style.display = 'none';
+                window.currentPhone = phone;
+                window.currentName = document.getElementById('name').value;
+            } else {
+                showMessage('Failed to send OTP', 'error');
+            }
+        } catch (error) {
+            showMessage('Server error. Make sure backend is running.', 'error');
+        }
+    });
+    
+    // Verify OTP
+    document.getElementById('verifyBtn').addEventListener('click', async () => {
+        const phone = window.currentPhone;
+        const otp = document.getElementById('otp').value;
+        const name = window.currentName;
+        
+        if (!otp) {
+            showMessage('Enter OTP', 'error');
+            return;
+        }
+        
+        showMessage('Verifying...', 'info');
+        
+        try {
+            const response = await fetch(`${API_URL}/auth/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, otp, userType: selectedType, name })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userType', data.user.userType);
+                localStorage.setItem('userId', data.user.id);
+                
+                showMessage('Login successful! Redirecting...', 'success');
+                
+                setTimeout(() => {
+                    if (data.user.userType === 'worker') {
+                        window.location.href = 'worker-dashboard.html';
+                    } else {
+                        window.location.href = 'employer-dashboard.html';
+                    }
+                }, 1000);
+            } else {
+                showMessage(data.error || 'Invalid OTP', 'error');
+            }
+        } catch (error) {
+            showMessage('Verification failed', 'error');
+        }
+    });
+    
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.textContent = msg;
+        msgDiv.className = `message ${type}`;
+        setTimeout(() => {
+            msgDiv.textContent = '';
+            msgDiv.className = 'message';
+        }, 5000);
+    }
+</script>
+</body>
+</html>
