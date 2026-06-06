@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard - JobVoice</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* FORCE TAB VISIBILITY - INLINE FIX */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="logo-small">🎤 JobVoice</div>
+            <div class="user-info">
+                <span class="user-name" id="userName">Worker</span>
+                <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-value" id="jobCount">0</span>
+                <span class="stat-label">Jobs Completed</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">₹<span id="earnings">0</span></span>
+                <span class="stat-label">Total Earnings</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="rating">0</span>
+                <span class="stat-label">Rating</span>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-container">
+            <h3>🔍 Find Work</h3>
+            <button id="voiceBtn" class="voice-btn">🎤 Speak Job Type</button>
+            <div class="or-divider">———— OR ————</div>
+            <input type="text" id="searchInput" placeholder="Type job (plumbing, cooking, driving...)" class="input-field">
+            <button id="searchBtn" class="btn-primary">🔍 Search Jobs</button>
+            <div id="searchStatus" class="status"></div>
+        </div>
+
+        <div id="searchResults" class="job-list"></div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="active">📋 Active Jobs</button>
+            <button class="tab-btn" data-tab="completed">✅ Completed</button>
+            <button class="tab-btn" data-tab="applications">📝 Applications</button>
+            <button class="tab-btn" data-tab="profile">👤 My Profile</button>
+        </div>
+
+        <!-- Tab Contents - ONLY ONE SHOWS AT A TIME -->
+        <div id="activeTab" class="tab-content active">
+            <div id="activeJobsList" class="job-list"></div>
+        </div>
+
+        <div id="completedTab" class="tab-content">
+            <div id="completedJobsList" class="job-list"></div>
+        </div>
+
+        <div id="applicationsTab" class="tab-content">
+            <div id="applicationsList" class="job-list"></div>
+        </div>
+
+        <div id="profileTab" class="tab-content">
+            <div class="profile-card">
+                <div class="profile-field">
+                    <label>👤 Your Name</label>
+                    <input type="text" id="profileName" class="input-field">
+                </div>
+                <div class="profile-field">
+                    <label>🔧 Skills (comma separated)</label>
+                    <input type="text" id="profileSkills" placeholder="plumbing, cooking, driving" class="input-field">
+                </div>
+                <div class="profile-field">
+                    <label>📅 Experience (years)</label>
+                    <input type="number" id="profileExp" class="input-field">
+                </div>
+                <button id="updateProfileBtn" class="btn-primary">💾 Update Profile</button>
+                <div id="badgesList" class="badges-list"></div>
+            </div>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <script src="js/worker.js"></script>
+</body>
+</html>
